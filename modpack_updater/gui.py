@@ -62,26 +62,20 @@ def run_gui():
     def download_mods():
         username = username_entry.get()
         password = password_entry.get()
-        if not parsed_modlist:
-            messagebox.showerror("Error", "No modlist loaded. Import one first.")
-            return
-        if not username or not password:
-            messagebox.showerror("Error", "Please enter Steam credentials.")
-            return
 
-        mod_ids = [mod['id'] for mod in parsed_modlist]
-        download_output.insert(tk.END, f"Starting download of {len(mod_ids)} mods...\n")
+        def log_line(text):
+            download_output.insert(tk.END, text + "\n")
+            download_output.see(tk.END)
 
-        try:
-            def log_line(text):
-                download_output.insert(tk.END, text + "\n")
-                download_output.see(tk.END)
+        mod_ids = ['843577117']  # RHSUSAF, single known ID
 
-                download_mods_with_steamcmd(username, password, mod_ids, logger=log_line)
-                log_line("✅ All mods attempted.")
+        log_line("Starting download of 1 mod...")
 
-        except Exception as e:
-            download_output.insert(tk.END, f"❌ Error: {str(e)}\n")
+        from modpack_updater.steamcmd import download_mods_with_steamcmd
+
+        download_mods_with_steamcmd(username, password, mod_ids, logger=log_line)
+        
+        log_line("Finished")
 
     # Button
     tk.Button(tab_download, text="Download Mods", command=download_mods).pack(pady=5)
