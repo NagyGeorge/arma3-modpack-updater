@@ -54,6 +54,19 @@ def run_gui():
     password_entry = tk.Entry(tab_download, width=40, show="*")
     password_entry.pack()
 
+    #Folder Selection
+    tk.Label(tab_download, text="Mod Download Folder:").pack(pady=(10, 0))
+    download_dir_var = tk.Stringvar()
+    download_dir_entry = tk.Entry(tab_download, textvariable=download_dir_var, width=60)
+    download_dir_entry.pack(pady=(0, 5))
+
+    def choose_download_folder():
+        path = filedialog.askdirectory()
+        if path:
+            download_dir_var.set(path)
+    
+    tk.Button(tab_download, text="Select Folder", command=choose_download_folder).pack()
+
     # Output
     download_output = scrolledtext.ScrolledText(tab_download, width=90, height=25)
     download_output.pack(padx=10, pady=10)
