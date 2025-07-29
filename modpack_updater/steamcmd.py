@@ -4,33 +4,30 @@ import tempfile
 
 STEAM_APP_ID = 107410  # Arma 3
 
-def download_mods_with_steamcmd(username, password, mod_ids, steamcmd_path="C:\\SteamCMD\\steamcmd.exe", logger=None):
+def download_mods_with_steamcmd(username, mod_ids, download_dir, steamcmd_path="C:\\SteamCMD\\steamcmd.exe", logger=None):
     if logger:
         logger("[DEBUG] Entered steamcmd.py function")
     print("[DEBUG] Entered steamcmd.py function")
+
+    # Make sure download directory exists
+    os.makedirs(download_dir, exist_ok=True)
 
     for mod_id in mod_ids:
         if logger:
             logger(f"[DEBUG] About to download {mod_id}")
         print(f"[DEBUG] About to download {mod_id}")
 
-        #return  # early return to test if this even runs
+        # Generate the script content
+        script_content = (
+            f"force_install_dir {download_dir}\n"
+            f"login {username}\n"
+            f"workshop_download_item {STEAM_APP_ID} {mod_id}\n"
+            f"quit\n"
+        )
 
-        # Create SteamCMD script
+        # Create a temp script and close it to avoid Windows file locks
         with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as script_file:
-            script_file.write(f"login {username}\n")
-            script_file.write(f"workshop_download_item {STEAM_APP_ID} {mod_id}\n")
-            script_file.write("quit\n")
-            script_path = script_file.name
-
-        if logger:
-            logger(f"[DEBUG] Creating SteamCMD script")
-        print(f"[DEBUG] Creating SteamCMD script")
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as script_file:
-            script_file.write(f"login {username}\n")
-            script_file.write(f"workshop_download_item {STEAM_APP_ID} {mod_id}\n")
-            script_file.write("quit\n")
+            script_file.write(script_content)
             script_path = script_file.name
 
         if logger:
@@ -42,16 +39,28 @@ def download_mods_with_steamcmd(username, password, mod_ids, steamcmd_path="C:\\
                 [steamcmd_path, "+runscript", script_path],
                 capture_output=True,
                 text=True,
-                timeout=300  # timeout after 5 minutes
+                timeout=300  # 5 min per mod
             )
 
             if result.returncode != 0:
-                raise RuntimeError(result.stderr.strip())
-
-            if logger:
-                logger(result.stdout.strip())
+                error_msg = result.stderr.strip() or "Unknown error"
+                if logger:
+                    logger(f"[ERROR] SteamCMD failed for mod {mod_id}: {error_msg}")
+                print(f"[ERROR] SteamCMD failed for mod {mod_id}: {error_msg}")
+            else:
+                output = result.stdout.strip()
+                if logger:
+                    logger(output)
+                print(output)
 
         except Exception as e:
             if logger:
-                logger(f"[ERROR] Subprocess failed: {str(e)}")
-            print(f"[ERROR] Subprocess failed: {str(e)}")
+                logger(f"[ERROR] Subprocess failed for mod {mod_id}: {str(e)}")
+            print(f"[ERROR] Subprocess failed for mod {mod_id}: {str(e)}")
+
+        finally:
+            # Optional: Clean up temp script
+            try:
+                os.remove(script_path)
+            except OSError:
+                pass

@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 from tkinter import ttk, filedialog, scrolledtext, messagebox
 from modpack_updater.parser import parse_arma3_modlist_table
@@ -56,7 +57,7 @@ def run_gui():
 
     #Folder Selection
     tk.Label(tab_download, text="Mod Download Folder:").pack(pady=(10, 0))
-    download_dir_var = tk.Stringvar()
+    download_dir_var = tk.StringVar()
     download_dir_entry = tk.Entry(tab_download, textvariable=download_dir_var, width=60)
     download_dir_entry.pack(pady=(0, 5))
 
@@ -76,6 +77,12 @@ def run_gui():
         username = username_entry.get()
         password = password_entry.get()
 
+        download_dir = download_dir_var.get()
+        if not os.path.exists(download_dir):
+            messagebox.showerror("Error", "Please select a valid download directory.")
+            return
+
+
         def log_line(text):
             download_output.insert(tk.END, text + "\n")
             download_output.see(tk.END)
@@ -86,7 +93,7 @@ def run_gui():
 
         from modpack_updater.steamcmd import download_mods_with_steamcmd
 
-        download_mods_with_steamcmd(username, password, mod_ids, logger=log_line)
+        download_mods_with_steamcmd(username, mod_ids, download_dir, logger=log_line)
         
         log_line("Finished")
 
