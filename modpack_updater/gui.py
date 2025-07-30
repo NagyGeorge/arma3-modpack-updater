@@ -1,12 +1,14 @@
+"""Tkinter based GUI for the modpack updater."""
+
 import os
 import threading
 import tkinter as tk
 from tkinter import ttk, filedialog, scrolledtext, messagebox
 from modpack_updater.parser import parse_arma3_modlist_table
-from modpack_updater.steamcmd import download_mods_with_steamcmd
 
 # Global: store modlist across tabs
 parsed_modlist = []
+
 
 def run_gui():
     from modpack_updater.config import load_config, save_config
@@ -30,8 +32,7 @@ def run_gui():
     def open_file():
         global parsed_modlist
         file_path = filedialog.askopenfilename(
-            title="Select Arma 3 HTML Modlist",
-            filetypes=[("HTML Files", "*.html")]
+            title="Select Arma 3 HTML Modlist", filetypes=[("HTML Files", "*.html")]
         )
         if not file_path:
             return
@@ -66,7 +67,9 @@ def run_gui():
 
     # Remember Username checkbox
     remember_username_var = tk.BooleanVar(value=config.get("remember_username", False))
-    tk.Checkbutton(tab_download, text="Remember Username", variable=remember_username_var).pack()
+    tk.Checkbutton(
+        tab_download, text="Remember Username", variable=remember_username_var
+    ).pack()
 
     # Folder Selection
     tk.Label(tab_download, text="Mod Download Folder:").pack(pady=(10, 0))
@@ -79,7 +82,7 @@ def run_gui():
         path = filedialog.askdirectory()
         if path:
             download_dir_var.set(path)
-    
+
     tk.Button(tab_download, text="Select Folder", command=choose_download_folder).pack()
 
     # Output
@@ -100,14 +103,16 @@ def run_gui():
             return
 
         if not parsed_modlist:
-            messagebox.showerror("Error", "No modlist imported. Please import a modlist first.")
+            messagebox.showerror(
+                "Error", "No modlist imported. Please import a modlist first."
+            )
             return
 
         def log_line(text):
             download_output.insert(tk.END, text + "\n")
             download_output.see(tk.END)
 
-        mod_ids = [mod['id'] for mod in parsed_modlist]
+        mod_ids = [mod["id"] for mod in parsed_modlist]
         log_line(f"Starting download of {len(mod_ids)} mod(s)...")
 
         # Disable button during download
@@ -115,8 +120,14 @@ def run_gui():
 
         # Worker function for background thread
         def worker():
-            from modpack_updater.steamcmd import download_mods_with_steamcmd, flatten_mods
-            download_mods_with_steamcmd(username, mod_ids, download_dir, logger=log_line)
+            from modpack_updater.steamcmd import (
+                download_mods_with_steamcmd,
+                flatten_mods,
+            )
+
+            download_mods_with_steamcmd(
+                username, mod_ids, download_dir, logger=log_line
+            )
             flatten_mods(download_dir, logger=log_line)
             log_line("Finished downloading mods.")
             root.after(0, lambda: download_button.config(state=tk.NORMAL))
@@ -159,7 +170,9 @@ def run_gui():
             return
 
         if not parsed_modlist:
-            messagebox.showerror("Error", "No modlist imported. Please import a modlist first.")
+            messagebox.showerror(
+                "Error", "No modlist imported. Please import a modlist first."
+            )
             return
 
         def log_line(text):
@@ -174,11 +187,17 @@ def run_gui():
         # Worker function to run in background
         def worker():
             from modpack_updater.deploy import deploy_mods
+
             # Replace this path with the same folder you used for SteamCMD downloads
             steamcmd_download_dir = download_dir_var.get()
 
-            deploy_mods(parsed_modlist, steamcmd_download_dir, deploy_dir,
-                        symlink=True, logger=log_line)
+            deploy_mods(
+                parsed_modlist,
+                steamcmd_download_dir,
+                deploy_dir,
+                symlink=True,
+                logger=log_line,
+            )
 
             log_line("✅ Deployment complete.")
             root.after(0, lambda: deploy_button.config(state=tk.NORMAL))
@@ -191,7 +210,7 @@ def run_gui():
         new_config = {
             "download_dir": download_dir_var.get(),
             "deploy_dir": deploy_dir_var.get(),
-            "remember_username": remember_username_var.get()
+            "remember_username": remember_username_var.get(),
         }
         if remember_username_var.get():
             new_config["username"] = username_entry.get()
