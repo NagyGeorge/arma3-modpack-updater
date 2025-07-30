@@ -9,6 +9,10 @@ from modpack_updater.steamcmd import download_mods_with_steamcmd
 parsed_modlist = []
 
 def run_gui():
+    from modpack_updater.config import load_config, save_config
+
+    config = load_config()
+
     root = tk.Tk()
     root.title("Arma 3 Modpack Updater")
     root.geometry("800x600")
@@ -52,13 +56,22 @@ def run_gui():
     username_entry = tk.Entry(tab_download, width=40)
     username_entry.pack()
 
+    # Pre-fill username if 'remember_username' was saved
+    if config.get("remember_username"):
+        username_entry.insert(0, config.get("username", ""))
+
     tk.Label(tab_download, text="Steam Password:").pack(pady=(10, 0))
     password_entry = tk.Entry(tab_download, width=40, show="*")
     password_entry.pack()
 
+    # Remember Username checkbox
+    remember_username_var = tk.BooleanVar(value=config.get("remember_username", False))
+    tk.Checkbutton(tab_download, text="Remember Username", variable=remember_username_var).pack()
+
     # Folder Selection
     tk.Label(tab_download, text="Mod Download Folder:").pack(pady=(10, 0))
     download_dir_var = tk.StringVar()
+    download_dir_var.set(config.get("download_dir", ""))
     download_dir_entry = tk.Entry(tab_download, textvariable=download_dir_var, width=60)
     download_dir_entry.pack(pady=(0, 5))
 
@@ -120,6 +133,7 @@ def run_gui():
     # Deployment folder selection
     tk.Label(tab_deploy, text="Deploy Mods To Folder:").pack(pady=(10, 0))
     deploy_dir_var = tk.StringVar()
+    deploy_dir_var.set(config.get("deploy_dir", ""))
     deploy_dir_entry = tk.Entry(tab_deploy, textvariable=deploy_dir_var, width=60)
     deploy_dir_entry.pack(pady=(0, 5))
 
@@ -172,5 +186,18 @@ def run_gui():
         threading.Thread(target=worker, daemon=True).start()
 
     deploy_button.config(command=deploy_mods_gui)
+
+    def on_close():
+        new_config = {
+            "download_dir": download_dir_var.get(),
+            "deploy_dir": deploy_dir_var.get(),
+            "remember_username": remember_username_var.get()
+        }
+        if remember_username_var.get():
+            new_config["username"] = username_entry.get()
+        save_config(new_config)
+        root.destroy()
+
+    root.protocol("WM_DELETE_WINDOW", on_close)
 
     root.mainloop()
