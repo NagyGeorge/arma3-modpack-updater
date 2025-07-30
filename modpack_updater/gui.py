@@ -137,7 +137,7 @@ def run_gui():
     deploy_button = tk.Button(tab_deploy, text="Deploy Mods")
     deploy_button.pack(pady=5)
 
-    def deploy_mods():
+    def deploy_mods_gui():
         deploy_dir = deploy_dir_var.get()
         if not os.path.exists(deploy_dir):
             messagebox.showerror("Error", "Please select a valid deployment directory.")
@@ -153,14 +153,23 @@ def run_gui():
 
         log_line(f"Starting deployment of {len(parsed_modlist)} mod(s)...")
 
-        # Placeholder worker until we implement symlink deployment
+        # Disable deploy button during operation
+        deploy_button.config(state=tk.DISABLED)
+
+        # Worker function to run in background
         def worker():
-            for mod in parsed_modlist:
-                log_line(f"Would deploy {mod['name']} (ID: {mod['id']})")
-            log_line("Deployment simulation complete.")
+            from modpack_updater.deploy import deploy_mods
+            # Replace this path with the same folder you used for SteamCMD downloads
+            steamcmd_download_dir = download_dir_var.get()
+
+            deploy_mods(parsed_modlist, steamcmd_download_dir, deploy_dir,
+                        symlink=True, logger=log_line)
+
+            log_line("✅ Deployment complete.")
+            root.after(0, lambda: deploy_button.config(state=tk.NORMAL))
 
         threading.Thread(target=worker, daemon=True).start()
 
-    deploy_button.config(command=deploy_mods)
+    deploy_button.config(command=deploy_mods_gui)
 
     root.mainloop()
