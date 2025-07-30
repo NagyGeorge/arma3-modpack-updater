@@ -27,7 +27,7 @@ def download_mods_with_steamcmd(username, mod_ids, download_dir, steamcmd_path="
 
         # Create a temp script and close it to avoid Windows file locks
         with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as script_file:
-            script_file.write(script_content)
+            script_file.write(script_content) #test 
             script_path = script_file.name
 
         if logger:
