@@ -73,6 +73,10 @@ def run_gui():
     download_output = scrolledtext.ScrolledText(tab_download, width=90, height=25)
     download_output.pack(padx=10, pady=10)
 
+    # Download button
+    download_button = tk.Button(tab_download, text="Download Mods")
+    download_button.pack(pady=5)
+
     # Callback
     def download_mods():
         username = username_entry.get()
@@ -82,30 +86,30 @@ def run_gui():
             messagebox.showerror("Error", "Please select a valid download directory.")
             return
 
-        def log_line(text):
-            download_output.insert(tk.END, text + "\n")
-            download_output.see(tk.END)
-
-        # mod_ids = ['843577117']  # Test with single mod first
-        # Use the full parsed modlist
         if not parsed_modlist:
             messagebox.showerror("Error", "No modlist imported. Please import a modlist first.")
             return
 
+        def log_line(text):
+            download_output.insert(tk.END, text + "\n")
+            download_output.see(tk.END)
+
         mod_ids = [mod['id'] for mod in parsed_modlist]
         log_line(f"Starting download of {len(mod_ids)} mod(s)...")
 
-        # Worker function to run in a background thread
+        # Disable button during download
+        download_button.config(state=tk.DISABLED)
+
+        # Worker function for background thread
         def worker():
             from modpack_updater.steamcmd import download_mods_with_steamcmd
             download_mods_with_steamcmd(username, mod_ids, download_dir, logger=log_line)
-            log_line("Finished downloading mods.")
+            log_line("✅ Finished downloading mods.")
+            root.after(0, lambda: download_button.config(state=tk.NORMAL))
 
-        # Start the worker in a background thread
         threading.Thread(target=worker, daemon=True).start()
 
-    # Button
-    tk.Button(tab_download, text="Download Mods", command=download_mods).pack(pady=5)
-
+    # Bind the button
+    download_button.config(command=download_mods)
 
     root.mainloop()
