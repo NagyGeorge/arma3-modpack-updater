@@ -1,4 +1,5 @@
 import os
+import threading
 import tkinter as tk
 from tkinter import ttk, filedialog, scrolledtext, messagebox
 from modpack_updater.parser import parse_arma3_modlist_table
@@ -55,7 +56,7 @@ def run_gui():
     password_entry = tk.Entry(tab_download, width=40, show="*")
     password_entry.pack()
 
-    #Folder Selection
+    # Folder Selection
     tk.Label(tab_download, text="Mod Download Folder:").pack(pady=(10, 0))
     download_dir_var = tk.StringVar()
     download_dir_entry = tk.Entry(tab_download, textvariable=download_dir_var, width=60)
@@ -75,29 +76,30 @@ def run_gui():
     # Callback
     def download_mods():
         username = username_entry.get()
-        password = password_entry.get()
-
         download_dir = download_dir_var.get()
+
         if not os.path.exists(download_dir):
             messagebox.showerror("Error", "Please select a valid download directory.")
             return
-
 
         def log_line(text):
             download_output.insert(tk.END, text + "\n")
             download_output.see(tk.END)
 
-        mod_ids = ['843577117']  # RHSUSAF, single known ID
+        mod_ids = ['843577117']  # Test with single mod first
+        log_line(f"Starting download of {len(mod_ids)} mod(s)...")
 
-        log_line("Starting download of 1 mod...")
+        # Worker function to run in a background thread
+        def worker():
+            from modpack_updater.steamcmd import download_mods_with_steamcmd
+            download_mods_with_steamcmd(username, mod_ids, download_dir, logger=log_line)
+            log_line("Finished downloading mods.")
 
-        from modpack_updater.steamcmd import download_mods_with_steamcmd
-
-        download_mods_with_steamcmd(username, mod_ids, download_dir, logger=log_line)
-        
-        log_line("Finished")
+        # Start the worker in a background thread
+        threading.Thread(target=worker, daemon=True).start()
 
     # Button
     tk.Button(tab_download, text="Download Mods", command=download_mods).pack(pady=5)
+
 
     root.mainloop()
