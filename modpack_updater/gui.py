@@ -86,7 +86,13 @@ def run_gui():
             download_output.insert(tk.END, text + "\n")
             download_output.see(tk.END)
 
-        mod_ids = ['843577117']  # Test with single mod first
+        # mod_ids = ['843577117']  # Test with single mod first
+        # Use the full parsed modlist
+        if not parsed_modlist:
+            messagebox.showerror("Error", "No modlist imported. Please import a modlist first.")
+            return
+
+        mod_ids = [mod['id'] for mod in parsed_modlist]
         log_line(f"Starting download of {len(mod_ids)} mod(s)...")
 
         # Worker function to run in a background thread
