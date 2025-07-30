@@ -18,7 +18,7 @@ def deploy_mods(modlist, steamcmd_download_dir, deploy_dir, symlink=True, logger
 
         if os.path.exists(target_path):
             if logger:
-                logger(f"ℹ️ Mod {mod_name} already deployed, skipping.")
+                logger(f"ℹMod {mod_name} already deployed, skipping.")
             continue
 
         try:
