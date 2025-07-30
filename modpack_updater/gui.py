@@ -102,9 +102,10 @@ def run_gui():
 
         # Worker function for background thread
         def worker():
-            from modpack_updater.steamcmd import download_mods_with_steamcmd
+            from modpack_updater.steamcmd import download_mods_with_steamcmd, flatten_mods
             download_mods_with_steamcmd(username, mod_ids, download_dir, logger=log_line)
-            log_line("✅ Finished downloading mods.")
+            flatten_mods(download_dir, logger=log_line)
+            log_line("Finished downloading mods.")
             root.after(0, lambda: download_button.config(state=tk.NORMAL))
 
         threading.Thread(target=worker, daemon=True).start()

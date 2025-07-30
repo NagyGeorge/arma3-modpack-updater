@@ -10,7 +10,8 @@ def download_mods_with_steamcmd(username, mod_ids, download_dir, steamcmd_path="
     print("[DEBUG] Entered steamcmd.py function")
 
     # Ensure download directory exists
-    os.makedirs(download_dir, exist_ok=True)
+    flattened_dir = os.path.join(download_dir, "mods", "steamapps", "workshop", "content", "107410")
+    os.makedirs(flattened_dir, exist_ok=True)
 
     for mod_id in mod_ids:
         if logger:
@@ -19,7 +20,7 @@ def download_mods_with_steamcmd(username, mod_ids, download_dir, steamcmd_path="
 
         # Generate script content
         script_content = (
-            f"force_install_dir {download_dir}\n"
+            f"force_install_dir {flattened_dir}\n"
             f"login {username}\n"
             f"workshop_download_item {STEAM_APP_ID} {mod_id}\n"
             f"quit\n"
@@ -65,3 +66,29 @@ def download_mods_with_steamcmd(username, mod_ids, download_dir, steamcmd_path="
             os.remove(script_path)
         except OSError:
             pass
+
+def flatten_mods(download_dir, logger=None):
+    workshop_dir = os.path.join(download_dir, "mods", "steamapps", "workshop", "content", "107410")
+    target_dir = os.path.join(download_dir, "mods")
+    
+    if not os.path.exists(workshop_dir):
+        return
+    
+    for item in os.listdir(workshop_dir):
+        src = os.path.join(workshop_dir, item)
+        dst = os.path.join(target_dir, item)
+        if os.path.isdir(src):
+            if not os.path.exists(dst):
+                os.rename(src, dst)
+                if logger:
+                    logger(f"Moved {item} to flattened mods directory")
+    
+    # Cleanup empty steam structure
+    steamapps_root = os.path.join(download_dir, "mods", "steamapps")
+    import shutil
+    try:
+        shutil.rmtree(steamapps_root)
+        if logger:
+            logger("Cleaned up SteamCMD scaffolding.")
+    except OSError:
+        pass

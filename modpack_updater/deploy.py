@@ -2,7 +2,7 @@ import os
 import shutil
 
 def deploy_mods(modlist, steamcmd_download_dir, deploy_dir, symlink=True, logger=None):
-    workshop_dir = os.path.join(steamcmd_download_dir, "steamapps", "workshop", "content", "107410")
+    workshop_dir = os.path.join(steamcmd_download_dir, "mods")
     os.makedirs(deploy_dir, exist_ok=True)
 
     for mod in modlist:
