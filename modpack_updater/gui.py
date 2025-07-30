@@ -112,4 +112,55 @@ def run_gui():
     # Bind the button
     download_button.config(command=download_mods)
 
+    # TAB 3: Deploy Mods
+    tab_deploy = ttk.Frame(notebook)
+    notebook.add(tab_deploy, text="Deploy Mods")
+
+    # Deployment folder selection
+    tk.Label(tab_deploy, text="Deploy Mods To Folder:").pack(pady=(10, 0))
+    deploy_dir_var = tk.StringVar()
+    deploy_dir_entry = tk.Entry(tab_deploy, textvariable=deploy_dir_var, width=60)
+    deploy_dir_entry.pack(pady=(0, 5))
+
+    def choose_deploy_folder():
+        path = filedialog.askdirectory()
+        if path:
+            deploy_dir_var.set(path)
+
+    tk.Button(tab_deploy, text="Select Folder", command=choose_deploy_folder).pack()
+
+    # Deployment log output
+    deploy_output = scrolledtext.ScrolledText(tab_deploy, width=90, height=25)
+    deploy_output.pack(padx=10, pady=10)
+
+    # Deploy button
+    deploy_button = tk.Button(tab_deploy, text="Deploy Mods")
+    deploy_button.pack(pady=5)
+
+    def deploy_mods():
+        deploy_dir = deploy_dir_var.get()
+        if not os.path.exists(deploy_dir):
+            messagebox.showerror("Error", "Please select a valid deployment directory.")
+            return
+
+        if not parsed_modlist:
+            messagebox.showerror("Error", "No modlist imported. Please import a modlist first.")
+            return
+
+        def log_line(text):
+            deploy_output.insert(tk.END, text + "\n")
+            deploy_output.see(tk.END)
+
+        log_line(f"Starting deployment of {len(parsed_modlist)} mod(s)...")
+
+        # Placeholder worker until we implement symlink deployment
+        def worker():
+            for mod in parsed_modlist:
+                log_line(f"Would deploy {mod['name']} (ID: {mod['id']})")
+            log_line("Deployment simulation complete.")
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    deploy_button.config(command=deploy_mods)
+
     root.mainloop()
