@@ -10,8 +10,7 @@ from modpack_updater.deploy import deploy_mods
 # Global: store modlist across tabs
 parsed_modlist = []
 
-def run_gui():
-
+def run_gui(): 
     config = load_config()
 
     root = tk.Tk()
