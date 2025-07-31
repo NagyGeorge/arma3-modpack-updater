@@ -3,13 +3,14 @@ import threading
 import tkinter as tk
 from tkinter import ttk, filedialog, scrolledtext, messagebox
 from modpack_updater.parser import parse_arma3_modlist_table
-from modpack_updater.steamcmd import download_mods_with_steamcmd
+from modpack_updater.steamcmd import download_mods_with_steamcmd, flatten_mods
+from modpack_updater.config import load_config, save_config
+from modpack_updater.deploy import deploy_mods
 
 # Global: store modlist across tabs
 parsed_modlist = []
 
 def run_gui():
-    from modpack_updater.config import load_config, save_config
 
     config = load_config()
 
@@ -79,7 +80,7 @@ def run_gui():
         path = filedialog.askdirectory()
         if path:
             download_dir_var.set(path)
-    
+
     tk.Button(tab_download, text="Select Folder", command=choose_download_folder).pack()
 
     # Output
@@ -115,7 +116,6 @@ def run_gui():
 
         # Worker function for background thread
         def worker():
-            from modpack_updater.steamcmd import download_mods_with_steamcmd, flatten_mods
             download_mods_with_steamcmd(username, mod_ids, download_dir, logger=log_line)
             flatten_mods(download_dir, logger=log_line)
             log_line("Finished downloading mods.")
@@ -173,7 +173,6 @@ def run_gui():
 
         # Worker function to run in background
         def worker():
-            from modpack_updater.deploy import deploy_mods
             # Replace this path with the same folder you used for SteamCMD downloads
             steamcmd_download_dir = download_dir_var.get()
 
@@ -201,3 +200,4 @@ def run_gui():
     root.protocol("WM_DELETE_WINDOW", on_close)
 
     root.mainloop()
+
