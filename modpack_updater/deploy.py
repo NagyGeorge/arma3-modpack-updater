@@ -33,3 +33,4 @@ def deploy_mods(modlist, steamcmd_download_dir, deploy_dir, symlink=True, logger
         except Exception as e:
             if logger:
                 logger(f"Failed to deploy {mod_name}: {str(e)}")
+

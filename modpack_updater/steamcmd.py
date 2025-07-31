@@ -1,6 +1,7 @@
 import subprocess
 import os
 import tempfile
+import shutil
 
 STEAM_APP_ID = 107410  # Arma 3
 
@@ -70,10 +71,10 @@ def download_mods_with_steamcmd(username, mod_ids, download_dir, steamcmd_path="
 def flatten_mods(download_dir, logger=None):
     workshop_dir = os.path.join(download_dir, "mods", "steamapps", "workshop", "content", "107410")
     target_dir = os.path.join(download_dir, "mods")
-    
+
     if not os.path.exists(workshop_dir):
         return
-    
+   
     for item in os.listdir(workshop_dir):
         src = os.path.join(workshop_dir, item)
         dst = os.path.join(target_dir, item)
@@ -82,10 +83,9 @@ def flatten_mods(download_dir, logger=None):
                 os.rename(src, dst)
                 if logger:
                     logger(f"Moved {item} to flattened mods directory")
-    
+   
     # Cleanup empty steam structure
     steamapps_root = os.path.join(download_dir, "mods", "steamapps")
-    import shutil
     try:
         shutil.rmtree(steamapps_root)
         if logger:

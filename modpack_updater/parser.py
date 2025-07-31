@@ -28,3 +28,4 @@ if __name__ == '__main__':
     modlist = parse_arma3_modlist_table('3rdID Workshop(18).html')
     for mod in modlist:
         print(f"{mod['name']} - ID: {mod['id']}")
+
